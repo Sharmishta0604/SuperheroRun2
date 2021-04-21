@@ -14,7 +14,7 @@ var bullet,bullets;
 var life,lives;
 var health=10;
 var startButton;
-var score=0;
+var score=490;
 var counter=10;
 var gameLevel=1;
 var shootSound,levelUp,gameSound;
@@ -35,30 +35,31 @@ shootSound=loadSound('sounds/shoot.mp3');
 levelUp=loadSound('sounds/level up.mp3');
 hitSound=loadSound('sounds/hit.wav');
 bombSound=loadSound('sounds/bomb.wav');
+cuffSound=loadSound('sounds/handcuff.mp3');
 }
 
 function setup(){
-var canvas = createCanvas(600,400);
+var canvas = createCanvas(windowWidth,windowHeight);
 
     engine = Engine.create();
     world = engine.world;
 
-    city=createSprite(1100,250);
+    city=createSprite(windowWidth,height-200);
     city.addImage(cityImg);
-    city.scale=0.9;
+    city.scale=1;
     city.velocityX=-8;
 
     player=createSprite(60,200,80,20);
     player.addImage(playerImg);
     player.scale=0.125;
 
-    border1=createSprite(300,10,600,10);
-    border2=createSprite(300,395,600,10);
+    border1=createSprite(0,20,600,10);
+    border2=createSprite(0,windowHeight-20,600,10);
     border1.visible=false;
     border2.visible=false;
    
     startButton=createButton("Start");
-    startButton.position(300,350);
+    startButton.position(width/2,height-100);
     startButton.mousePressed(change);
     bombs=createGroup();
     thieves=createGroup();
@@ -85,8 +86,8 @@ function draw(){
         player.collide(border2);
     
 
-    if(city.x<-700){
-        city.x=1070;
+    if(city.x<windowWidth-windowWidth+10){
+        city.x=windowWidth;
     }    
 
     if(keyWentDown(UP_ARROW)){
@@ -109,13 +110,19 @@ function draw(){
      if(keyWentDown("d")){
          shoot();
      }
+
+     if(keyDown("c")){
+         
+     }
     
 spawnBomb();
   spawnTheives();  
 spawnVillians();
 spawnLife();
-text("Lives: "+ health,10,50);
-text("Score: "+ score,500,50);
+textSize(15);
+fill("yellow");
+text("Lives: "+ health,windowWidth*19/20,20);
+text("Score: "+ score,windowWidth/20,20);
 
 
 
@@ -137,13 +144,14 @@ for(var i=0;i<thieves.length;i++){
         //console.log(player.x);
         thieves.get(i).destroy();
         //health=health+1;
+        cuffSound.play();
         score+=10;
     }
     
 }
 
 for(i=0;i<thieves.length;i++){
-    if((thieves.get(i).x)<(player.x) && (thieves.get(i).y)==(player.y)){
+    if(thieves.get(i).isTouching(player) && (thieves.get(i).x)<(player.x)){
         thieves.get(i).destroy();
     health=health-1;
     hitSound.play();
@@ -176,7 +184,7 @@ for(i=0;i<lives.length;i++){
     drawSprites();
     if(gameState==="play" && score<100){
         
-        text("Level 1",290,100);
+        text("Level 1",windowWidth*9/20,50);
         }
 
         if(score===100 || score===110){
@@ -189,7 +197,7 @@ for(i=0;i<lives.length;i++){
 
         if(score>=100 && score<300){
         gameLevel=2;
-        text("Level 2",290,100);
+        text("Level 2",windowWidth*9/20,50);
         
         }
         
@@ -208,23 +216,23 @@ for(i=0;i<lives.length;i++){
 
         if(score>=300 && score<500){
             gameLevel=3;
-            text("Level 3",290,100);
+            text("Level 3",windowWidth*9/20,50);
             
         }
         
         if(score>=500){
             
             gameState="goodEnd";
-            text("Congrats! You finished the game",290,200);
+            
         }
         
-        if(player.isTouching(bombs) || health===0 || score<0){
+        if(player.isTouching(bombs) || health===0){
             health=0;
             player.visible=false;
-            bombSound.play();
+            //bombSound.play();
             
             gameState="end";
-            text("GAME OVER",300,250);
+            
             
         }
 
@@ -240,13 +248,13 @@ for(i=0;i<lives.length;i++){
         
         textSize(25);
         fill("blue");
-        text("GAME OVER",220,150);
+        text("GAME OVER",windowWidth/3,windowHeight/2);
         
         
         textSize(12);
         fill("red");
-        text("Press 'r' to restart",250,300);
-        text("Score: "+ score,500,50);
+        text("Press 'r' to restart",windowWidth/2,windowHeight*2/3);
+        text("Score: "+ score,windowWidth/10,50);
         if(keyDown("r")){
             gameState="play";
             reset();
@@ -266,12 +274,12 @@ for(i=0;i<lives.length;i++){
         
         textSize(25);
         fill("black");
-        text("CONGRATS!You finished the game",220,150);
+        text("CONGRATS! You finished the game",windowWidth/3,windowHeight/2);
         
         
-        textSize(12);
+        textSize(20);
         fill("red");
-        text("Press 'r' to restart",250,300);
+        text("Press 'r' to restart",windowWidth/2,windowHeight*2/3);
        // text("Score: "+ score,500,50);
         if(keyDown("r")){
             gameState="play";
@@ -286,69 +294,35 @@ for(i=0;i<lives.length;i++){
     console.log(counter);
 }
 function spawnBomb(){
-if(gameLevel===1){
-    if(frameCount%300===0){
-    bomb=createSprite(random(600,700),random(20,380),20,20);
-    bomb.addImage(bombImg);
-    bomb.scale=0.01;
-    bomb.velocityX=-(4+score/10);
-    //console.log(bomb.velocityX);
-    bomb.lifetime=150;
-    bombs.add(bomb);
-}
-}
-else if(gameLevel===2 && frameCount%200===0){
-    bomb=createSprite(random(600,700),random(20,380),20,20);
-    bomb.addImage(bombImg);
-    bomb.scale=0.01;
-    bomb.velocityX=-(3+score/10);
-    //console.log(bomb.velocityX);
-    bomb.lifetime=150;
-    bombs.add(bomb);
 
+    if(frameCount%200===0){
+    bomb=createSprite(random(windowWidth,windowWidth-20),random(20,windowHeight-20),20,20);
+    bomb.addImage(bombImg);
+    bomb.scale=0.01;
+    bomb.velocityX=-(gameLevel*5);
+    //console.log(bomb.velocityX);
+    bomb.lifetime=400;
+    bombs.add(bomb);
+}
 }
 
-else if(gameLevel===3 && frameCount%100===0){
-    bomb=createSprite(random(600,700),random(20,380),20,20);
-    bomb.addImage(bombImg);
-    bomb.scale=0.01;
-    bomb.velocityX=-(3+score/15);
-    //console.log(bomb.velocityX);
-    bomb.lifetime=150;
-    bombs.add(bomb);
-}
-}
+
 
 function spawnTheives(){
-    if(gameLevel===1 && frameCount%270===0){
-        thief=createSprite(random(600,700),random(20,380),40,20);
+    if(frameCount%170===0){
+        thief=createSprite(random(windowWidth,windowWidth-20),random(20,windowHeight-20),40,20);
         thief.addImage(thiefImg);
         thief.scale=0.1;
-        thief.velocityX=-(5+score/10);
+        thief.velocityX=-(gameLevel*6);
         thief.lifetime=500;
         thieves.add(thief);
     }
-    else if(gameLevel===2 && frameCount%180===0){
-        thief=createSprite(random(600,700),random(20,380),40,20);
-        thief.addImage(thiefImg);
-        thief.scale=0.1;
-        thief.velocityX=-(4+score/10);
-        thief.lifetime=500;
-        thieves.add(thief);
-    }
-    else if(gameLevel===3 && frameCount%90===0){
-        thief=createSprite(random(600,700),random(20,380),40,20);
-        thief.addImage(thiefImg);
-        thief.scale=0.1;
-        thief.velocityX=-(4+score/15);
-        thief.lifetime=500;
-        thieves.add(thief);
-    }
+    
 }
 
     function spawnVillians(){
-        if(gameLevel===1 && frameCount%450===0){
-            villian=createSprite(random(600,700),random(20,380),40,60);
+        if(frameCount%200===0){
+            villian=createSprite(random(windowWidth,windowWidth-20),random(20,windowHeight-20),40,60);
             var rand = Math.round(random(1,4));
             switch(rand){
                 case 1: villian.addImage(villImg1);
@@ -365,71 +339,28 @@ function spawnTheives(){
                 break;
             }
                 
-            villian.velocityX=-(2+score/10);
+            villian.velocityX=-gameLevel*6;
             villian.lifetime=600;
             villians.add(villian);
         }
-        else if(gameLevel===2 && frameCount%300===0){
-            villian=createSprite(random(600,700),random(20,380),40,60);
-            var rand = Math.round(random(1,4));
-            switch(rand){
-                case 1: villian.addImage(villImg1);
-                villian.scale=0.015;
-                break;
-                case 2: villian.addImage(villImg2);
-                villian.scale=0.1;
-                break;
-                case 3: villian.addImage(villImg3);
-                villian.scale=0.15;
-                break;
-                case 4: villian.addImage(villImg4);
-                villian.scale=0.25;
-                break;
-            }
-                
-            villian.velocityX=-(1.5+score/10);
-            villian.lifetime=600;
-            villians.add(villian);
-        }
-        else if(gameLevel===3 && frameCount%150===0){
-            villian=createSprite(random(600,700),random(20,380),40,60);
-            var rand = Math.round(random(1,4));
-            switch(rand){
-                case 1: villian.addImage(villImg1);
-                villian.scale=0.015;
-                break;
-                case 2: villian.addImage(villImg2);
-                villian.scale=0.1;
-                break;
-                case 3: villian.addImage(villImg3);
-                villian.scale=0.15;
-                break;
-                case 4: villian.addImage(villImg4);
-                villian.scale=0.25;
-                break;
-            }
-                
-            villian.velocityX=-(1.5+score/15);
-            villian.lifetime=600;
-            villians.add(villian);
-        }
+        
     }
 
         function spawnLife(){
             if(frameCount%500===0){
-                life=createSprite(random(600,700),random(20,380),20,20);
+                life=createSprite(random(windowWidth,windowWidth-20),random(20,windowHeight-20),20,20);
                 life.addImage(lifeImg);
                 life.scale=0.01;
-                life.velocityX=-7;
+                life.velocityX=-10;
                 //console.log(bomb.velocityX);
-                life.lifetime=400;
+                life.lifetime=700;
                 lives.add(life);
             }}
 
         function shoot(){
             
                 bullet=createSprite(player.x+40,player.y-10,20,5);
-                bullet.velocityX=10;
+                bullet.velocityX=15;
                 bullet.shapeColor="red";
                 bullet.lifetime=100;
                 shootSound.play();
@@ -441,14 +372,14 @@ function spawnTheives(){
             
             textSize(35);
             fill("yellow");
-            text("Superhero Game",150,50);
-            textSize(12);
+            text("Superhero Runner",width/2-100,height/5);
+            textSize(20);
             fill("red");
-            text("Instructions:",100,120);
-            text("Press D to defeat the villians",100,175);
-            text("Press C when near the theives to catch them",100,225);
-            text("Avoid the bombs, or else you will die",100,275);
-            text("Touch the medicines to gain one life",100,325);
+            text("Instructions:",width-width+200,height*3/10);
+            text("Press D to defeat the villians",width-width+200,height*5/10);
+            text("Press C when near the theives to catch them",width-width+200,height*6/10);
+            text("Avoid the bombs, or else you will die",width-width+200,height*7/10);
+            text("Touch the medicines to gain one life",width-width+200,height*8/10);
         }
 
         function change(){
