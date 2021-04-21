@@ -14,7 +14,7 @@ var bullet,bullets;
 var life,lives;
 var health=10;
 var startButton;
-var score=490;
+var score=0;
 var counter=10;
 var gameLevel=1;
 var shootSound,levelUp,gameSound;
